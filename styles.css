@@ -283,20 +283,48 @@ button { font: inherit; color: inherit; }
   border-top: 1px dashed var(--rule);
 }
 
-.devlog .card .preview {
-  position: relative;
-  height: 140px;
-  border: 1px solid var(--rule);
-  background:
-    repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in oklab, var(--accent) 14%, transparent) 6px 7px),
-    var(--bg-sunken);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--fg-muted);
-  font-size: 11px;
-  letter-spacing: .1em;
+.devlog .card .preview-gallery {
+  width: 100%;
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-sunken);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, #fff 7%, transparent),
+    0 10px 36px color-mix(in oklab, #000 22%, transparent);
+}
+.devlog .card .preview-gallery-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--rule-strong);
+  min-height: 0;
+}
+.devlog .card .preview-gallery-slide {
+  margin: 0;
+  padding: 0;
+  aspect-ratio: 16 / 10;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+.devlog .card .preview-gallery-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  display: block;
+}
+.devlog .card .preview-gallery-hint {
+  display: none;
+  margin: 0;
+  padding: 6px 10px 8px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  text-align: center;
+  color: var(--fg-muted);
+  border-top: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--bg) 88%, var(--bg-sunken));
 }
 
 .devlog .labs {
@@ -360,6 +388,31 @@ button { font: inherit; color: inherit; }
   .devlog .contact { grid-template-columns: 1fr; }
   .devlog .lab { grid-template-columns: 40px 1fr; }
   .devlog .lab .desc, .devlog .lab .st { grid-column: 2; }
+}
+
+@media (max-width: 640px) {
+  .devlog .card .preview-gallery { border-radius: 6px; }
+  .devlog .card .preview-gallery-track {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 8%;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .devlog .card .preview-gallery-track::-webkit-scrollbar { display: none; }
+  .devlog .card .preview-gallery-slide {
+    flex: 0 0 84%;
+    scroll-snap-align: center;
+    aspect-ratio: 16 / 10;
+    margin-inline: 8px;
+  }
+  .devlog .card .preview-gallery-slide:first-child { margin-inline-start: 12px; }
+  .devlog .card .preview-gallery-slide:last-child { margin-inline-end: 12px; }
+  .devlog .card .preview-gallery-hint { display: block; }
 }
 
 /* --------- DIRECTION 2: blueprint --------- */

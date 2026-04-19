@@ -24,7 +24,7 @@ function Prompt() {
       case "whoami":
         push("dvagolab — independent software lab.\nbackend · security · cloud. currently also: a small mobile game."); break;
       case "projects":
-        push("P-001  Untitled Mobile Game   [active]\nP-002  Next thing                [planned]"); break;
+        push("P-001  Viking Mobile Game   [active]\nP-002  Next thing                [planned]"); break;
       case "labs":
       case "experiments":
         push(DVAGO.experiments.map(x => `${x.code}  ${x.name.padEnd(34)} [${x.s}]`).join("\n")); break;
@@ -105,8 +105,22 @@ function DirDevlog() {
                 <span>·</span>
                 <span>{p.kind}</span>
               </div>
-              {i === 0 && (
-                <div className="preview">[ GAME CAPTURE · 16:9 · placeholder ]</div>
+              {i === 0 && Array.isArray(p.shots) && p.shots.length > 0 && (
+                <div className="preview-gallery" role="region" aria-label={`${p.name} screenshots`}>
+                  <div className="preview-gallery-track">
+                    {p.shots.map((src, si) => (
+                      <figure key={si} className="preview-gallery-slide">
+                        <img
+                          src={src}
+                          alt={si === 0 ? `Screenshot: ${p.name}` : ""}
+                          loading={si === 0 ? "eager" : "lazy"}
+                          decoding="async"
+                        />
+                      </figure>
+                    ))}
+                  </div>
+                  <p className="preview-gallery-hint">Swipe · more shots</p>
+                </div>
               )}
               <h3>{p.name}</h3>
               <p>{p.desc}</p>

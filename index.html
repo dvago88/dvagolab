@@ -295,20 +295,48 @@ button { font: inherit; color: inherit; }
   border-top: 1px dashed var(--rule);
 }
 
-.devlog .card .preview {
-  position: relative;
-  height: 140px;
-  border: 1px solid var(--rule);
-  background:
-    repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in oklab, var(--accent) 14%, transparent) 6px 7px),
-    var(--bg-sunken);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--fg-muted);
-  font-size: 11px;
-  letter-spacing: .1em;
+.devlog .card .preview-gallery {
+  width: 100%;
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-sunken);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, #fff 7%, transparent),
+    0 10px 36px color-mix(in oklab, #000 22%, transparent);
+}
+.devlog .card .preview-gallery-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--rule-strong);
+  min-height: 0;
+}
+.devlog .card .preview-gallery-slide {
+  margin: 0;
+  padding: 0;
+  aspect-ratio: 16 / 10;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+.devlog .card .preview-gallery-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  display: block;
+}
+.devlog .card .preview-gallery-hint {
+  display: none;
+  margin: 0;
+  padding: 6px 10px 8px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  text-align: center;
+  color: var(--fg-muted);
+  border-top: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--bg) 88%, var(--bg-sunken));
 }
 
 .devlog .labs {
@@ -826,7 +854,28 @@ button { font: inherit; color: inherit; }
   .devlog .card { padding: 16px; min-height: auto; gap: 10px; }
   .devlog .card.featured { min-height: auto; }
   .devlog .card h3 { font-size: 18px; }
-  .devlog .card .preview { height: 110px; }
+  .devlog .card .preview-gallery { border-radius: 6px; }
+  .devlog .card .preview-gallery-track {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 8%;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .devlog .card .preview-gallery-track::-webkit-scrollbar { display: none; }
+  .devlog .card .preview-gallery-slide {
+    flex: 0 0 84%;
+    scroll-snap-align: center;
+    aspect-ratio: 16 / 10;
+    margin-inline: 8px;
+  }
+  .devlog .card .preview-gallery-slide:first-child { margin-inline-start: 12px; }
+  .devlog .card .preview-gallery-slide:last-child { margin-inline-end: 12px; }
+  .devlog .card .preview-gallery-hint { display: block; }
   .devlog .card .meta { flex-wrap: wrap; gap: 4px 14px; font-size: 10px; }
   .devlog .contact { padding: 48px var(--gutter); gap: 28px; }
   .devlog .contact .chan { padding-left: 16px; grid-template-columns: 80px 1fr; }
@@ -971,20 +1020,25 @@ window.DVAGO = {
     tagline: "An independent software lab building small, considered things.",
     description: "dvagolab is a one-person studio exploring the edges of backend, security, and cloud — currently with a small mobile game in the oven.",
     location: "Remote · Build log public",
-    year: "EST. 2025",
+    year: "EST. 2026",
   },
   projects: [
     {
       id: "P-001",
       code: "P-001",
-      name: "Untitled Mobile Game",
-      kind: "Game · iOS / Android",
-      desc: "A short, quiet game for phones. Single player, handcrafted, no ads, no IAP, no tracking. In active development.",
+      name: "Viking Mobile Game",
+      kind: "Game · Android",
+      desc: "A Viking-themed 2D side-scrolling platformer built with Flutter and the Flame game engine. Guide your Viking warrior across frozen fjords, rune forests, and mountain passes — jumping platforms, collecting coins, defeating slime enemies, and reaching the rune stone to complete each level.",
       status: "In progress",
       statusKey: "active",
-      progress: "~40%",
+      progress: "~58%",
       eta: "Beta — late 2026",
-      stack: "Rust core · thin native shells",
+      stack: "Flutter · Flame · Dart",
+      shots: [
+        "assets/game-capture.png",
+        "assets/game-capture.png",
+        "assets/game-capture.png",
+      ],
     },
     {
       id: "P-002",
@@ -1045,7 +1099,7 @@ function Prompt() {
       case "whoami":
         push("dvagolab — independent software lab.\nbackend · security · cloud. currently also: a small mobile game."); break;
       case "projects":
-        push("P-001  Untitled Mobile Game   [active]\nP-002  Next thing                [planned]"); break;
+        push("P-001  Viking Mobile Game   [active]\nP-002  Next thing                [planned]"); break;
       case "labs":
       case "experiments":
         push(DVAGO.experiments.map(x => `${x.code}  ${x.name.padEnd(34)} [${x.s}]`).join("\n")); break;
@@ -1106,8 +1160,7 @@ function DirDevlog() {
         <div>
           <h1>dvago<span className="slash">/</span>lab</h1>
           <p className="sub">
-            An independent software lab. <em>Backend, security, cloud.</em> Currently
-            also: a small mobile game in the oven. One person. Ships slowly, on purpose.
+            A personal space to ship small, curious things across the tech stack, without a roadmap, pitch deck, or seriousness budget
           </p>
         </div>
         <Prompt />
@@ -1125,8 +1178,22 @@ function DirDevlog() {
                 <span>·</span>
                 <span>{p.kind}</span>
               </div>
-              {i === 0 && (
-                <div className="preview">[ GAME CAPTURE · 16:9 · placeholder ]</div>
+              {i === 0 && Array.isArray(p.shots) && p.shots.length > 0 && (
+                <div className="preview-gallery" role="region" aria-label={`${p.name} screenshots`}>
+                  <div className="preview-gallery-track">
+                    {p.shots.map((src, si) => (
+                      <figure key={si} className="preview-gallery-slide">
+                        <img
+                          src={src}
+                          alt={si === 0 ? `Screenshot: ${p.name}` : ""}
+                          loading={si === 0 ? "eager" : "lazy"}
+                          decoding="async"
+                        />
+                      </figure>
+                    ))}
+                  </div>
+                  <p className="preview-gallery-hint">Swipe · more shots</p>
+                </div>
               )}
               <h3>{p.name}</h3>
               <p>{p.desc}</p>
@@ -1445,7 +1512,7 @@ const GAME_ART = `
  │          ╱·····╲    ╭──╮                    │
  │    .   ╱·······╲    │◇ │   .   .       ·    │
  │       ──────────────┴──┴──────────────       │
- │  p-001 · untitled mobile game · in-progress │
+ │  p-001 · viking mobile game · in-progress │
  └──────────────────────────────────────────────┘`.trim();
 
 function AsciiField() {
