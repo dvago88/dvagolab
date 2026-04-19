@@ -1,0 +1,56 @@
+// Shared content / data for all three directions
+window.DVAGO = {
+  brand: {
+    name: "dvagolab",
+    wordmark: "dvago/lab",
+    tagline: "An independent software lab building small, considered things.",
+    description: "dvagolab is a one-person studio exploring the edges of backend, security, and cloud — currently with a small mobile game in the oven.",
+    location: "Remote · Build log public",
+    year: "EST. 2025",
+  },
+  projects: [
+    {
+      id: "P-001",
+      code: "P-001",
+      name: "Untitled Mobile Game",
+      kind: "Game · iOS / Android",
+      desc: "A short, quiet game for phones. Single player, handcrafted, no ads, no IAP, no tracking. In active development.",
+      status: "In progress",
+      statusKey: "active",
+      progress: "~40%",
+      eta: "Beta — late 2026",
+      stack: "Rust core · thin native shells",
+    },
+    {
+      id: "P-002",
+      code: "P-002",
+      name: "Next thing",
+      kind: "TBD",
+      desc: "Placeholder for the next project. The lab ships when it's ready, not before.",
+      status: "Planned",
+      statusKey: "seed",
+      progress: "—",
+      eta: "Someday",
+      stack: "—",
+    },
+  ],
+  experiments: [
+    { code: "XP.01", name: "wire-protocol sketches", desc: "Small, auditable binary framings. Notes in public.", status: "live", s: "live" },
+    { code: "XP.02", name: "threat-model worksheets", desc: "Reusable templates for indie security work.", status: "live", s: "live" },
+    { code: "XP.03", name: "edge-function primitives", desc: "Tiny deploy targets for tiny ideas.", status: "paused", s: "paused" },
+    { code: "XP.04", name: "authn without passwords", desc: "Keys, devices, social recovery. Opinionated.", status: "live", s: "live" },
+    { code: "XP.05", name: "game input latency study", desc: "End-to-end measurement for mobile touch.", status: "live", s: "live" },
+    { code: "XP.06", name: "ops-as-a-notebook", desc: "Literate runbooks that actually run.", status: "seed", s: "seed" },
+  ],
+  expertise: [
+    { k: "Backend",  v: "Rust, Go, TypeScript. Event-driven, boring-by-default." },
+    { k: "Security", v: "Threat modeling, crypto review, auth systems, supply-chain." },
+    { k: "Cloud",    v: "AWS · GCP · on-prem. IaC, observable, cheap to run." },
+  ],
+  contact: {
+    email: "hello@dvagolab.com",
+    github: "github.com/dvagolab",
+    rss:   "dvagolab.com/log.xml",
+    signal:"proof-on-request",
+  },
+};

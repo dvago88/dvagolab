@@ -1,0 +1,1711 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>dvagolab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap" />
+<style>
+:root {
+  --bg: #0b0c0a;
+  --bg-raised: #111310;
+  --bg-sunken: #070806;
+  --fg: #e7e5df;
+  --fg-dim: #9a9a93;
+  --fg-muted: #5e5e58;
+  --rule: #1d1f1b;
+  --rule-strong: #2a2d28;
+
+  --accent: #c8f264;          /* lime default */
+  --accent-ink: #0b0c0a;
+  --accent-soft: color-mix(in oklab, var(--accent) 18%, transparent);
+
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  --gutter: 32px;
+  --row: 56px;
+}
+
+[data-accent="lime"]   { --accent:#c8f264; }
+[data-accent="amber"]  { --accent:#f3c969; }
+[data-accent="cyan"]   { --accent:#7dd8d1; }
+[data-accent="coral"]  { --accent:#f2866b; }
+[data-accent="violet"] { --accent:#b5a3f5; }
+
+[data-density="compact"]     { --gutter: 20px; --row: 40px; }
+[data-density="comfortable"] { --gutter: 32px; --row: 56px; }
+[data-density="spacious"]    { --gutter: 48px; --row: 80px; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+img, svg, pre { max-width: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+
+::selection { background: var(--accent); color: var(--accent-ink); }
+
+/* --- shared scaffolding --- */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--rule);
+  padding: 14px var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: 12px;
+}
+.topbar .brand { display: flex; align-items: center; gap: 10px; letter-spacing: .02em; }
+.topbar .brand .dot {
+  width: 8px; height: 8px; background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.topbar nav { display: flex; gap: 18px; color: var(--fg-dim); }
+.topbar nav a { text-decoration: none; cursor: pointer; }
+.topbar nav a:hover { color: var(--fg); }
+.topbar .status { color: var(--fg-muted); display: flex; gap: 10px; align-items: center; }
+
+.footer {
+  padding: 24px var(--gutter);
+  border-top: 1px solid var(--rule);
+  color: var(--fg-muted);
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Utility */
+.mono { font-family: var(--mono); }
+.sans { font-family: var(--sans); }
+.dim  { color: var(--fg-dim); }
+.muted{ color: var(--fg-muted); }
+.kbd {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 1px 6px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  color: var(--fg-dim);
+  background: var(--bg-raised);
+}
+
+.accent { color: var(--accent); }
+.accent-bg { background: var(--accent); color: var(--accent-ink); }
+.hairline { border-top: 1px solid var(--rule); }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--rule-strong); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3d37; }
+
+/* Tweaks panel (shared) */
+.tweaks {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  width: 280px;
+  background: var(--bg-raised);
+  border: 1px solid var(--rule-strong);
+  border-radius: 6px;
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.tweaks h4 {
+  margin: 0 0 12px;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tweaks .row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.tweaks label { color: var(--fg-dim); font-size: 11px; }
+.tweaks .seg {
+  display: flex; gap: 4px; background: var(--bg-sunken);
+  border: 1px solid var(--rule); border-radius: 4px; padding: 3px;
+}
+.tweaks .seg button {
+  flex: 1; background: transparent; border: 0; padding: 6px 8px;
+  border-radius: 3px; color: var(--fg-dim); cursor: pointer;
+  font-size: 11px;
+}
+.tweaks .seg button[data-on="true"] { background: var(--fg); color: var(--bg); }
+.tweaks .swatches { display: flex; gap: 6px; }
+.tweaks .swatches button {
+  width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--rule-strong);
+  cursor: pointer; padding: 0;
+}
+.tweaks .swatches button[data-on="true"] { outline: 2px solid var(--fg); outline-offset: 2px; }
+.tweaks .close {
+  background: transparent; border: 0; color: var(--fg-muted); cursor: pointer;
+  font-size: 11px;
+}
+
+/* --------- DIRECTION 1: devlog --------- */
+.devlog .hero {
+  padding: 72px var(--gutter) 48px;
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: 48px;
+  align-items: end;
+}
+.devlog .hero h1 {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: clamp(44px, 7vw, 104px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: var(--fg);
+}
+.devlog .hero h1 .slash { color: var(--accent); }
+.devlog .hero .sub {
+  color: var(--fg-dim);
+  font-size: 14px;
+  max-width: 520px;
+  margin-top: 18px;
+}
+.devlog .hero .sub em { font-style: normal; color: var(--fg); }
+
+.devlog .prompt {
+  border: 1px solid var(--rule-strong);
+  background: var(--bg-sunken);
+  border-radius: 4px;
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 13px;
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+}
+.devlog .prompt .line { color: var(--fg-dim); }
+.devlog .prompt .line .you { color: var(--accent); }
+.devlog .prompt .out { color: var(--fg); margin: 4px 0 10px; white-space: pre-wrap; }
+.devlog .prompt .input-row {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px dashed var(--rule-strong);
+  padding-top: 10px;
+}
+.devlog .prompt input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  color: var(--fg);
+  font: inherit;
+  outline: none;
+  caret-color: var(--accent);
+}
+.devlog .prompt .chev { color: var(--accent); }
+.devlog .prompt .hint { color: var(--fg-muted); font-size: 11px; }
+
+.devlog .section {
+  padding: 48px var(--gutter);
+  border-bottom: 1px solid var(--rule);
+}
+.devlog .section h2 {
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin: 0 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.devlog .section h2::before {
+  content: "";
+  width: 6px; height: 6px; background: var(--accent);
+}
+
+.devlog .projects {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+.devlog .card {
+  grid-column: span 6;
+  border: 1px solid var(--rule);
+  padding: 20px;
+  transition: border-color .2s ease, transform .2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 220px;
+  background: var(--bg-raised);
+}
+.devlog .card:hover { border-color: var(--accent); }
+.devlog .card.featured { grid-column: span 12; min-height: 260px; }
+.devlog .card .tag {
+  font-size: 10px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  display: flex;
+  gap: 10px;
+}
+.devlog .card .tag b { color: var(--accent); font-weight: 500; }
+.devlog .card h3 {
+  font-size: 22px;
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.devlog .card p { margin: 0; color: var(--fg-dim); font-size: 13px; max-width: 68ch; }
+.devlog .card .meta {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--fg-muted);
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+}
+
+.devlog .card .preview {
+  position: relative;
+  height: 140px;
+  border: 1px solid var(--rule);
+  background:
+    repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in oklab, var(--accent) 14%, transparent) 6px 7px),
+    var(--bg-sunken);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-muted);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.devlog .labs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.devlog .lab {
+  display: grid;
+  grid-template-columns: 60px 1fr 140px 80px;
+  gap: 24px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-top: 1px dashed var(--rule);
+  cursor: default;
+  transition: color .15s ease;
+}
+.devlog .lab:first-child { border-top: 1px solid var(--rule-strong); }
+.devlog .lab:hover { color: var(--fg); }
+.devlog .lab .id { color: var(--fg-muted); font-size: 11px; }
+.devlog .lab .name { color: var(--fg); font-size: 15px; }
+.devlog .lab .desc { color: var(--fg-dim); font-size: 12px; }
+.devlog .lab .st {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.devlog .lab .st[data-s="live"]    { color: var(--accent); }
+.devlog .lab .st[data-s="paused"]  { color: #f3c969; }
+.devlog .lab .st[data-s="seed"]    { color: var(--fg-muted); }
+
+.devlog .contact {
+  padding: 72px var(--gutter);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+.devlog .contact h2 {
+  font-size: clamp(28px, 4vw, 48px);
+  margin: 0 0 16px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.devlog .contact p { color: var(--fg-dim); max-width: 52ch; }
+.devlog .contact .chan {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 8px 16px;
+  font-size: 13px;
+  border-left: 1px solid var(--rule);
+  padding-left: 24px;
+}
+.devlog .contact .chan .k { color: var(--fg-muted); }
+.devlog .contact .chan .v a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
+.devlog .contact .chan .v a:hover { color: var(--accent); border-color: var(--accent); }
+
+@media (max-width: 900px) {
+  .devlog .hero { grid-template-columns: 1fr; }
+  .devlog .card, .devlog .card.featured { grid-column: span 12; }
+  .devlog .contact { grid-template-columns: 1fr; }
+  .devlog .lab { grid-template-columns: 40px 1fr; }
+  .devlog .lab .desc, .devlog .lab .st { grid-column: 2; }
+}
+
+/* --------- DIRECTION 2: blueprint --------- */
+.blueprint {
+  background: var(--bg);
+  background-image:
+    linear-gradient(var(--rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: -1px -1px;
+}
+.blueprint .shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+.blueprint .hero {
+  padding: 120px 0 80px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 200px 1fr 200px;
+  gap: 32px;
+  align-items: start;
+}
+.blueprint .coord {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.blueprint .coord .dim { color: var(--fg-muted); opacity: .6; }
+.blueprint .coord-cell {
+  padding: 8px 0;
+  border-top: 1px solid var(--rule-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.blueprint .h1 {
+  font-family: var(--sans);
+  font-size: clamp(56px, 9vw, 128px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  margin: 0;
+}
+.blueprint .h1 .mark {
+  display: inline-block;
+  position: relative;
+  color: var(--accent);
+}
+.blueprint .sub {
+  margin-top: 28px;
+  max-width: 56ch;
+  color: var(--fg-dim);
+  font-size: 15px;
+  line-height: 1.55;
+  font-family: var(--sans);
+}
+.blueprint .hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+  text-align: right;
+}
+.blueprint .hero-meta .stamp {
+  border: 1px solid var(--rule-strong);
+  padding: 8px 10px;
+  font-size: 10px;
+  color: var(--fg-dim);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  background: var(--bg-raised);
+}
+.blueprint .hero-meta .stamp b { color: var(--accent); font-weight: 500; }
+
+.blueprint .section {
+  padding: 80px 0;
+  border-top: 1px solid var(--rule-strong);
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+}
+.blueprint .section-head {
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.blueprint .section-head .num { color: var(--accent); }
+.blueprint .section-head .tit { color: var(--fg); font-size: 14px; letter-spacing: .08em; }
+
+.blueprint .body { }
+
+.blueprint .projects { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--rule-strong); border: 1px solid var(--rule-strong); }
+.blueprint .proj {
+  background: var(--bg);
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 120px 1fr 260px 120px;
+  gap: 24px;
+  align-items: start;
+  transition: background .2s ease;
+}
+.blueprint .proj:hover { background: var(--bg-raised); }
+.blueprint .proj .id { color: var(--fg-muted); font-size: 11px; letter-spacing: .14em; }
+.blueprint .proj h3 { margin: 0 0 6px; font-family: var(--sans); font-weight: 400; font-size: 22px; letter-spacing: -.01em; }
+.blueprint .proj p { margin: 0; color: var(--fg-dim); font-size: 13px; font-family: var(--sans); }
+.blueprint .proj .specs {
+  display: grid; grid-template-columns: auto 1fr; column-gap: 14px; row-gap: 4px;
+  font-size: 11px;
+}
+.blueprint .proj .specs .k { color: var(--fg-muted); letter-spacing: .12em; text-transform: uppercase; }
+.blueprint .proj .specs .v { color: var(--fg); }
+.blueprint .proj .status {
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  align-self: start; padding: 4px 8px; border: 1px solid var(--rule-strong);
+  color: var(--fg-dim);
+  white-space: nowrap;
+}
+.blueprint .proj .status[data-s="active"] { color: var(--accent); border-color: var(--accent); }
+
+/* Blueprint system map */
+.blueprint .map {
+  position: relative;
+  min-height: 340px;
+  border: 1px solid var(--rule-strong);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 19px, var(--rule) 19px 20px),
+    repeating-linear-gradient(90deg, transparent 0 19px, var(--rule) 19px 20px);
+  padding: 32px;
+}
+.blueprint .node {
+  position: absolute;
+  padding: 8px 12px;
+  border: 1px solid var(--rule-strong);
+  background: var(--bg);
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--fg-dim);
+  cursor: default;
+  transition: border-color .15s ease, color .15s ease;
+}
+.blueprint .node b { display: block; color: var(--fg); letter-spacing: 0; font-size: 13px; font-family: var(--sans); font-weight: 400; margin-bottom: 2px; }
+.blueprint .node:hover { border-color: var(--accent); color: var(--fg); }
+.blueprint .node[data-core] { border-color: var(--accent); color: var(--accent); }
+.blueprint .node[data-core] b { color: var(--accent); }
+.blueprint .svg-overlay { position: absolute; inset: 0; pointer-events: none; }
+
+.blueprint .contact {
+  padding: 100px 0 80px;
+  border-top: 1px solid var(--rule-strong);
+  display: grid;
+  grid-template-columns: 200px 1fr 200px;
+  gap: 32px;
+}
+.blueprint .contact h2 {
+  font-family: var(--sans);
+  font-size: clamp(40px, 6vw, 80px);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+}
+.blueprint .contact h2 em { font-style: normal; color: var(--accent); }
+.blueprint .contact .ch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 640px; }
+.blueprint .contact .ch {
+  padding: 20px; border: 1px solid var(--rule-strong);
+  background: var(--bg); transition: border-color .15s ease;
+  text-decoration: none; color: inherit;
+  display: block;
+}
+.blueprint .contact .ch:hover { border-color: var(--accent); }
+.blueprint .contact .ch .k { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 8px; }
+.blueprint .contact .ch .v { font-family: var(--mono); font-size: 14px; color: var(--fg); }
+
+@media (max-width: 900px) {
+  .blueprint .hero, .blueprint .section, .blueprint .contact { grid-template-columns: 1fr; }
+  .blueprint .proj { grid-template-columns: 1fr; }
+  .blueprint .contact .ch-grid { grid-template-columns: 1fr; }
+  .blueprint .map { min-height: 520px; }
+}
+
+/* --------- DIRECTION 3: /lab --------- */
+.lab {
+  background: radial-gradient(ellipse at 80% -20%, color-mix(in oklab, var(--accent) 8%, transparent), transparent 50%), var(--bg);
+}
+.lab .shell { max-width: 1200px; margin: 0 auto; padding: 0 var(--gutter); }
+.lab .hero {
+  padding: 80px 0 48px;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.lab .wordmark {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(48px, 7vw, 96px);
+  letter-spacing: -0.02em;
+  line-height: 1.0;
+  margin: 0;
+}
+.lab .wordmark .slash { color: var(--accent); }
+.lab .wordmark .cursor {
+  display: inline-block; width: .5em; height: .85em;
+  background: var(--accent); vertical-align: baseline;
+  animation: blink 1.1s steps(2) infinite;
+  margin-left: 4px;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.lab .sub {
+  margin-top: 20px;
+  font-size: 15px;
+  color: var(--fg-dim);
+  max-width: 54ch;
+  line-height: 1.6;
+}
+.lab .sub em { color: var(--accent); font-style: normal; }
+
+.lab .ascii {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.1;
+  color: var(--fg-muted);
+  white-space: pre;
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid var(--rule);
+  background: var(--bg-sunken);
+  position: relative;
+  min-height: 280px;
+}
+.lab .ascii .glow {
+  position: absolute;
+  pointer-events: none;
+  width: 200px; height: 200px;
+  left: 30%; top: 30%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--accent) 22%, transparent), transparent 60%);
+  filter: blur(20px);
+  transition: transform .15s ease;
+}
+.lab .ascii pre { margin: 0; }
+
+.lab .running {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 8px 14px;
+  border: 1px solid var(--rule-strong);
+  font-size: 12px;
+  color: var(--fg-dim);
+  border-radius: 999px;
+}
+.lab .running .pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 var(--accent);
+  animation: pulse 1.6s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 50%, transparent); }
+  70% { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.lab .section {
+  padding: 60px 0;
+  border-top: 1px solid var(--rule);
+}
+.lab .section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.lab .section-title .slash { color: var(--accent); font-weight: 700; }
+.lab .section-title .name { color: var(--fg); font-size: 15px; }
+.lab .section-title .line { flex: 1; height: 1px; background: var(--rule); }
+
+.lab .projects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.lab .pcard {
+  border: 1px solid var(--rule);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform .2s ease, border-color .2s ease;
+  background: color-mix(in oklab, var(--bg-raised) 60%, transparent);
+}
+.lab .pcard:hover { border-color: var(--accent); transform: translateY(-2px); }
+.lab .pcard.featured { grid-column: 1 / -1; }
+.lab .pcard .art {
+  aspect-ratio: 16 / 7;
+  border: 1px solid var(--rule);
+  background: var(--bg-sunken);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+  white-space: pre;
+  padding: 12px;
+  overflow: hidden;
+  line-height: 1.0;
+}
+.lab .pcard h3 { margin: 0; font-size: 20px; font-weight: 500; font-family: var(--mono); }
+.lab .pcard h3 .arrow { color: var(--accent); }
+.lab .pcard p { margin: 0; color: var(--fg-dim); font-size: 13px; font-family: var(--sans); line-height: 1.6; }
+.lab .pcard .row {
+  margin-top: auto;
+  display: flex; justify-content: space-between;
+  font-size: 11px;
+  color: var(--fg-muted);
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+}
+
+.lab .experiments {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.lab .xp {
+  border: 1px dashed var(--rule-strong);
+  padding: 18px;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .15s ease, background .15s ease;
+  cursor: default;
+}
+.lab .xp:hover { border-style: solid; border-color: var(--accent); background: var(--bg-raised); }
+.lab .xp .code { font-size: 11px; color: var(--fg-muted); letter-spacing: .12em; }
+.lab .xp .name { font-size: 15px; color: var(--fg); }
+.lab .xp .desc { color: var(--fg-dim); font-size: 12px; font-family: var(--sans); }
+.lab .xp .status {
+  margin-top: auto; font-size: 10px; text-transform: uppercase; letter-spacing: .14em;
+  color: var(--fg-muted);
+}
+.lab .xp .status[data-s="live"]   { color: var(--accent); }
+.lab .xp .status[data-s="paused"] { color: #f3c969; }
+.lab .xp .status[data-s="seed"]   { color: var(--fg-muted); }
+
+.lab .contact {
+  padding: 100px 0;
+  text-align: center;
+  border-top: 1px solid var(--rule);
+}
+.lab .contact h2 {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: clamp(32px, 5vw, 56px);
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+}
+.lab .contact h2 .accent { color: var(--accent); }
+.lab .contact p { color: var(--fg-dim); margin: 0 auto 32px; max-width: 52ch; font-family: var(--sans); }
+.lab .contact .chs {
+  display: inline-flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+}
+.lab .contact .chs a {
+  padding: 10px 18px;
+  border: 1px solid var(--rule-strong);
+  text-decoration: none;
+  color: var(--fg);
+  font-size: 13px;
+  transition: all .15s ease;
+}
+.lab .contact .chs a:hover { border-color: var(--accent); color: var(--accent); }
+.lab .contact .chs a.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.lab .contact .chs a.primary:hover { filter: brightness(1.05); color: var(--accent-ink); }
+
+@media (max-width: 900px) {
+  .lab .hero, .lab .projects { grid-template-columns: 1fr; }
+  .lab .experiments { grid-template-columns: 1fr; }
+  .lab .pcard.featured { grid-column: auto; }
+}
+
+/* ================================================
+   RESPONSIVE REFINEMENTS
+   Tablet: ≤1024px · Small tablet: ≤900px (above)
+   Phone:  ≤640px  · Small phone:    ≤420px
+   ================================================ */
+
+/* Shrink shared gutter/row on narrower screens so everything breathes */
+@media (max-width: 768px) {
+  [data-density="compact"]     { --gutter: 16px; --row: 36px; }
+  [data-density="comfortable"] { --gutter: 20px; --row: 48px; }
+  [data-density="spacious"]    { --gutter: 28px; --row: 64px; }
+}
+@media (max-width: 420px) {
+  [data-density="compact"]     { --gutter: 12px; --row: 30px; }
+  [data-density="comfortable"] { --gutter: 14px; --row: 40px; }
+  [data-density="spacious"]    { --gutter: 18px; --row: 54px; }
+}
+
+/* Topbar: wrap nav, hide status on small screens */
+@media (max-width: 720px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    padding: 12px var(--gutter);
+  }
+  .topbar nav { gap: 14px; font-size: 11px; flex: 1 1 auto; justify-content: flex-end; flex-wrap: wrap; }
+  .topbar .status { display: none; }
+}
+@media (max-width: 420px) {
+  .topbar { font-size: 11px; padding: 10px var(--gutter); }
+  .topbar .brand { font-size: 12px; }
+  .topbar nav { gap: 10px; }
+}
+
+/* Footer wraps already; tighten padding on mobile */
+@media (max-width: 640px) {
+  .footer { padding: 18px var(--gutter); font-size: 10px; gap: 8px; }
+}
+
+/* Tweaks panel: adapt to small screens */
+@media (max-width: 480px) {
+  .tweaks {
+    right: 8px; left: 8px; bottom: 8px;
+    width: auto; padding: 12px;
+    max-height: 75vh; overflow-y: auto;
+  }
+}
+
+/* ---------- devlog ---------- */
+@media (max-width: 640px) {
+  .devlog .hero { padding: 40px var(--gutter) 24px; gap: 24px; }
+  .devlog .hero h1 { font-size: clamp(40px, 11vw, 64px); }
+  .devlog .hero .sub { font-size: 13px; margin-top: 14px; }
+  .devlog .prompt { min-height: 180px; padding: 12px; font-size: 12px; }
+  .devlog .prompt .hint { display: none; }
+  .devlog .section { padding: 32px var(--gutter); }
+  .devlog .section h2 { font-size: 11px; margin-bottom: 18px; }
+  .devlog .card { padding: 16px; min-height: auto; gap: 10px; }
+  .devlog .card.featured { min-height: auto; }
+  .devlog .card h3 { font-size: 18px; }
+  .devlog .card .preview { height: 110px; }
+  .devlog .card .meta { flex-wrap: wrap; gap: 4px 14px; font-size: 10px; }
+  .devlog .contact { padding: 48px var(--gutter); gap: 28px; }
+  .devlog .contact .chan { padding-left: 16px; grid-template-columns: 80px 1fr; }
+  .devlog .lab { grid-template-columns: 36px 1fr; gap: 10px 16px; padding: 12px 0; }
+  .devlog .lab .name { font-size: 14px; }
+}
+
+/* ---------- blueprint ---------- */
+/* Tablet: drop the ornamental side columns */
+@media (max-width: 1024px) {
+  .blueprint .hero { grid-template-columns: 1fr; gap: 20px; padding: 96px 0 64px; }
+  .blueprint .hero > .coord:first-child { order: -1; display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px 24px; }
+  .blueprint .hero .coord-cell { flex: 0 0 auto; padding: 6px 0; }
+  .blueprint .hero-meta { flex-direction: row; flex-wrap: wrap; align-items: flex-start; text-align: left; gap: 8px; }
+  .blueprint .section { grid-template-columns: 160px 1fr; padding: 64px 0; gap: 24px; }
+  .blueprint .section-head { position: static; }
+  .blueprint .contact { grid-template-columns: 1fr; padding: 80px 0 64px; }
+  .blueprint .proj { grid-template-columns: 90px 1fr; }
+  .blueprint .proj .specs { grid-column: 2; }
+  .blueprint .proj .status { grid-column: 2; justify-self: start; }
+}
+
+/* Phone: full single-column */
+@media (max-width: 768px) {
+  .blueprint { background-size: 28px 28px; }
+  .blueprint .hero { padding: 80px 0 48px; }
+  .blueprint .section { grid-template-columns: 1fr; padding: 48px 0; gap: 18px; }
+  .blueprint .section-head {
+    flex-direction: row; flex-wrap: wrap; gap: 8px 14px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--rule);
+  }
+  .blueprint .proj { grid-template-columns: 1fr; padding: 20px; gap: 12px; }
+  .blueprint .proj .specs, .blueprint .proj .status { grid-column: auto; }
+  .blueprint .contact { padding: 64px 0 48px; }
+  .blueprint .contact .ch-grid { grid-template-columns: 1fr; }
+  .blueprint .node { font-size: 10px; padding: 6px 8px; max-width: 150px; }
+  .blueprint .node b { font-size: 12px; }
+  /* inline-grid replacements moved to classes (see .bp-exp-row / .bp-expertise) */
+  .bp-expertise { grid-template-columns: 1fr !important; }
+  .bp-exp-row { grid-template-columns: 1fr !important; gap: 4px !important; padding: 14px 16px !important; }
+}
+
+/* Phone: convert system map from absolute schematic to stacked list */
+@media (max-width: 640px) {
+  .blueprint .map {
+    min-height: auto;
+    padding: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+  .blueprint .map .svg-overlay { display: none; }
+  .blueprint .node {
+    position: static;
+    left: auto !important; top: auto !important;
+    border: 0;
+    border-top: 1px solid var(--rule);
+    padding: 14px 16px;
+    max-width: none;
+    background: transparent;
+  }
+  .blueprint .node:first-of-type { border-top: 0; }
+}
+
+@media (max-width: 480px) {
+  .blueprint { background-size: 20px 20px; }
+  .blueprint .hero { padding: 64px 0 32px; }
+  .blueprint .h1 { font-size: clamp(44px, 13vw, 72px); }
+  .blueprint .sub { font-size: 14px; margin-top: 20px; }
+  .blueprint .proj h3 { font-size: 19px; }
+  .blueprint .contact h2 { font-size: clamp(32px, 9vw, 56px); margin-bottom: 20px; }
+  .blueprint .contact .ch { padding: 16px; }
+}
+
+/* ---------- /lab ---------- */
+@media (max-width: 1024px) {
+  .lab .experiments { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .lab .hero { padding: 56px 0 36px; gap: 28px; }
+  .lab .ascii { font-size: 10px; padding: 14px; min-height: auto; overflow-x: auto; }
+  .lab .ascii pre { line-height: 1.1; }
+}
+
+@media (max-width: 640px) {
+  .lab .hero { padding: 40px 0 24px; gap: 20px; }
+  .lab .sub { font-size: 14px; margin-top: 16px; }
+  .lab .running { margin-top: 18px; font-size: 11px; padding: 7px 12px; }
+  .lab .ascii { font-size: 8px; padding: 10px; }
+  .lab .ascii .glow { width: 140px; height: 140px; }
+  .lab .section { padding: 40px 0; }
+  .lab .section-title { font-size: 12px; gap: 10px; }
+  .lab .pcard { padding: 18px; gap: 12px; }
+  .lab .pcard .art { font-size: 7.5px; padding: 8px; overflow: hidden; }
+  .lab .pcard h3 { font-size: 18px; }
+  .lab .pcard .row { flex-wrap: wrap; gap: 4px 14px; font-size: 10px; }
+  .lab .experiments { grid-template-columns: 1fr; gap: 10px; }
+  .lab .xp { padding: 14px; min-height: auto; }
+  .lab .contact { padding: 64px 0 48px; }
+  .lab .contact .chs { flex-direction: column; align-items: stretch; gap: 10px; }
+  .lab .contact .chs a { text-align: center; padding: 12px 16px; }
+}
+
+@media (max-width: 420px) {
+  .lab .wordmark { font-size: clamp(44px, 13vw, 64px); }
+  .lab .ascii { font-size: 7px; }
+}
+
+/* Prevent horizontal scroll on narrow viewports when pre/ascii content is wider */
+.lab .ascii, .lab .pcard .art { overscroll-behavior-inline: contain; }
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+  // Tweakable defaults — persist across reloads when user changes them.
+  window.TWEAKS = /*EDITMODE-BEGIN*/{
+    "direction": "devlog",
+    "accent": "lime",
+    "density": "compact"
+  }/*EDITMODE-END*/;
+</script>
+
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+// ========================================================================
+// Inlined from src/*.jsx — Babel standalone can't fetch external .jsx
+// files when the page is opened via file://, so everything ships inline.
+// ========================================================================
+
+/* ---------- data.jsx ---------- */
+window.DVAGO = {
+  brand: {
+    name: "dvagolab",
+    wordmark: "dvago/lab",
+    tagline: "An independent software lab building small, considered things.",
+    description: "dvagolab is a one-person studio exploring the edges of backend, security, and cloud — currently with a small mobile game in the oven.",
+    location: "Remote · Build log public",
+    year: "EST. 2025",
+  },
+  projects: [
+    {
+      id: "P-001",
+      code: "P-001",
+      name: "Untitled Mobile Game",
+      kind: "Game · iOS / Android",
+      desc: "A short, quiet game for phones. Single player, handcrafted, no ads, no IAP, no tracking. In active development.",
+      status: "In progress",
+      statusKey: "active",
+      progress: "~40%",
+      eta: "Beta — late 2026",
+      stack: "Rust core · thin native shells",
+    },
+    {
+      id: "P-002",
+      code: "P-002",
+      name: "Next thing",
+      kind: "TBD",
+      desc: "Placeholder for the next project. The lab ships when it's ready, not before.",
+      status: "Planned",
+      statusKey: "seed",
+      progress: "—",
+      eta: "Someday",
+      stack: "—",
+    },
+  ],
+  experiments: [
+    { code: "XP.01", name: "wire-protocol sketches", desc: "Small, auditable binary framings. Notes in public.", status: "live", s: "live" },
+    { code: "XP.02", name: "threat-model worksheets", desc: "Reusable templates for indie security work.", status: "live", s: "live" },
+    { code: "XP.03", name: "edge-function primitives", desc: "Tiny deploy targets for tiny ideas.", status: "paused", s: "paused" },
+    { code: "XP.04", name: "authn without passwords", desc: "Keys, devices, social recovery. Opinionated.", status: "live", s: "live" },
+    { code: "XP.05", name: "game input latency study", desc: "End-to-end measurement for mobile touch.", status: "live", s: "live" },
+    { code: "XP.06", name: "ops-as-a-notebook", desc: "Literate runbooks that actually run.", status: "seed", s: "seed" },
+  ],
+  expertise: [
+    { k: "Backend",  v: "Rust, Go, TypeScript. Event-driven, boring-by-default." },
+    { k: "Security", v: "Threat modeling, crypto review, auth systems, supply-chain." },
+    { k: "Cloud",    v: "AWS · GCP · on-prem. IaC, observable, cheap to run." },
+  ],
+  contact: {
+    email: "hello@dvagolab.com",
+    github: "github.com/dvagolab",
+    rss:   "dvagolab.com/log.xml",
+    signal:"proof-on-request",
+  },
+};
+
+/* ---------- DirDevlog.jsx ---------- */
+const { useState, useRef, useEffect } = React;
+
+function Prompt() {
+  const [history, setHistory] = useState([
+    { kind: "out", text: "dvagolab — terminal build, v0.9\ntype `help` for available commands, or start typing." },
+  ]);
+  const [value, setValue] = useState("");
+  const inputRef = useRef(null);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [history]);
+
+  const run = (raw) => {
+    const cmd = raw.trim().toLowerCase();
+    const push = (out) => setHistory((h) => [...h, { kind: "cmd", text: raw }, { kind: "out", text: out }]);
+    if (!cmd) return;
+    switch (cmd) {
+      case "help":
+        push("available: whoami · projects · labs · contact · clear\ntry tab-completion in your head."); break;
+      case "whoami":
+        push("dvagolab — independent software lab.\nbackend · security · cloud. currently also: a small mobile game."); break;
+      case "projects":
+        push("P-001  Untitled Mobile Game   [active]\nP-002  Next thing                [planned]"); break;
+      case "labs":
+      case "experiments":
+        push(DVAGO.experiments.map(x => `${x.code}  ${x.name.padEnd(34)} [${x.s}]`).join("\n")); break;
+      case "contact":
+        push(`email:  ${DVAGO.contact.email}\ngithub: ${DVAGO.contact.github}\nrss:    ${DVAGO.contact.rss}`); break;
+      case "clear":
+        setHistory([{ kind: "out", text: "" }]); return;
+      case "sudo":
+        push("nice try."); break;
+      default:
+        push(`unknown command: ${cmd}\n(try \`help\`)`);
+    }
+  };
+
+  const onKey = (e) => {
+    if (e.key === "Enter") { run(value); setValue(""); }
+  };
+
+  return (
+    <div className="prompt" onClick={() => inputRef.current?.focus()} ref={scrollRef}>
+      {history.map((h, i) => h.kind === "cmd"
+        ? <div key={i} className="line"><span className="you">dvago@lab</span> <span style={{color:"var(--fg-muted)"}}>~</span> % {h.text}</div>
+        : <div key={i} className="out">{h.text}</div>
+      )}
+      <div className="input-row">
+        <span className="chev">%</span>
+        <input
+          ref={inputRef}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={onKey}
+          placeholder="try: whoami"
+        />
+        <span className="hint">enter ↵</span>
+      </div>
+    </div>
+  );
+}
+
+function DirDevlog() {
+  return (
+    <div className="devlog page">
+      <header className="topbar">
+        <div className="brand"><span className="dot" /> dvagolab</div>
+        <nav>
+          <a href="#projects">projects</a>
+          <a href="#labs">labs</a>
+          <a href="#contact">contact</a>
+        </nav>
+        <div className="status">
+          <span>build_0.9</span>
+          <span>·</span>
+          <span>{new Date().toISOString().slice(0,10)}</span>
+        </div>
+      </header>
+
+      <section className="hero">
+        <div>
+          <h1>dvago<span className="slash">/</span>lab</h1>
+          <p className="sub">
+            An independent software lab. <em>Backend, security, cloud.</em> Currently
+            also: a small mobile game in the oven. One person. Ships slowly, on purpose.
+          </p>
+        </div>
+        <Prompt />
+      </section>
+
+      <section className="section" id="projects">
+        <h2>current projects</h2>
+        <div className="projects">
+          {DVAGO.projects.map((p, i) => (
+            <article key={p.id} className={"card " + (i === 0 ? "featured" : "")}>
+              <div className="tag">
+                <span>{p.code}</span>
+                <span>·</span>
+                <b>{p.status}</b>
+                <span>·</span>
+                <span>{p.kind}</span>
+              </div>
+              {i === 0 && (
+                <div className="preview">[ GAME CAPTURE · 16:9 · placeholder ]</div>
+              )}
+              <h3>{p.name}</h3>
+              <p>{p.desc}</p>
+              <div className="meta">
+                <span>progress · {p.progress}</span>
+                <span>eta · {p.eta}</span>
+                <span>stack · {p.stack}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="section" id="labs">
+        <h2>labs · what we're exploring</h2>
+        <div className="labs">
+          {DVAGO.experiments.map((x) => (
+            <div key={x.code} className="lab">
+              <div className="id">{x.code}</div>
+              <div>
+                <div className="name">{x.name}</div>
+                <div className="desc">{x.desc}</div>
+              </div>
+              <div className="desc" style={{textAlign:"right"}}>
+                {x.s === "live" ? "reading notes · weekly" : x.s === "paused" ? "on the shelf" : "idea-stage"}
+              </div>
+              <div className="st" data-s={x.s}>{x.status}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="contact" id="contact">
+        <div>
+          <h2>Say hi.<br/>Quietly is fine.</h2>
+          <p>
+            If you want to work together, poke holes in a design, or just trade notes about
+            some corner of backend / security / cloud — the door is open.
+          </p>
+        </div>
+        <div className="chan">
+          <div className="k">email</div>
+          <div className="v"><a href={`mailto:${DVAGO.contact.email}`}>{DVAGO.contact.email}</a></div>
+          <div className="k">github</div>
+          <div className="v"><a href={`https://${DVAGO.contact.github}`}>{DVAGO.contact.github}</a></div>
+          <div className="k">rss</div>
+          <div className="v"><a href={`https://${DVAGO.contact.rss}`}>{DVAGO.contact.rss}</a></div>
+          <div className="k">signal</div>
+          <div className="v">{DVAGO.contact.signal}</div>
+        </div>
+      </section>
+
+      <footer className="footer">
+        <span>© dvagolab · 2025 →</span>
+        <span>compiled with care · no trackers · no ads</span>
+      </footer>
+    </div>
+  );
+}
+
+/* ---------- DirBlueprint.jsx ---------- */
+function SystemMap() {
+  const nodes = [
+    { id: "core", label: "dvagolab", sub: "core", x: 46, y: 42, core: true },
+    { id: "be",   label: "backend",  sub: "rust · go · ts", x: 8,  y: 18 },
+    { id: "sec",  label: "security", sub: "threat · crypto · auth", x: 8,  y: 66 },
+    { id: "cld",  label: "cloud",    sub: "aws · gcp · edge", x: 74, y: 18 },
+    { id: "game", label: "game",     sub: "P-001 · mobile", x: 74, y: 66 },
+    { id: "lab",  label: "/labs",    sub: "open notes", x: 46, y: 82 },
+  ];
+  const edges = [
+    ["be","core"], ["sec","core"], ["cld","core"],
+    ["game","core"], ["lab","core"],
+  ];
+  const pos = Object.fromEntries(nodes.map(n => [n.id, n]));
+
+  return (
+    <div className="map" aria-label="system map">
+      <svg className="svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {edges.map(([a,b], i) => {
+          const A = pos[a], B = pos[b];
+          return (
+            <line
+              key={i}
+              x1={A.x + 6} y1={A.y + 3}
+              x2={B.x + 6} y2={B.y + 3}
+              stroke="var(--rule-strong)"
+              strokeWidth="0.15"
+              strokeDasharray="0.6 0.4"
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+        })}
+      </svg>
+      {nodes.map((n) => (
+        <div
+          key={n.id}
+          className="node"
+          data-core={n.core || undefined}
+          style={{ left: `${n.x}%`, top: `${n.y}%` }}
+        >
+          <b>{n.label}</b>
+          {n.sub}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DirBlueprint() {
+  return (
+    <div className="blueprint page">
+      <header className="topbar">
+        <div className="brand"><span className="dot" /> dvagolab <span className="muted">· schematic</span></div>
+        <nav>
+          <a href="#work">work</a>
+          <a href="#map">system</a>
+          <a href="#labs">labs</a>
+          <a href="#contact">contact</a>
+        </nav>
+        <div className="status">
+          <span>DVG-LAB / REV-A</span>
+          <span>·</span>
+          <span>SHEET 01/04</span>
+        </div>
+      </header>
+
+      <div className="shell">
+        <section className="hero">
+          <div className="coord">
+            <div className="coord-cell">
+              <span className="dim">FILE</span>
+              <span>dvagolab.index</span>
+            </div>
+            <div className="coord-cell">
+              <span className="dim">REV</span>
+              <span>A · 2026.04</span>
+            </div>
+            <div className="coord-cell">
+              <span className="dim">STATUS</span>
+              <span>OPEN · ACCEPTING</span>
+            </div>
+          </div>
+
+          <div>
+            <h1 className="h1">An independent <span className="mark">software&nbsp;lab</span>, designed for long time horizons.</h1>
+            <p className="sub">
+              dvagolab is a one-person studio shipping small, considered things across
+              backend, security, and cloud — alongside a mobile game quietly taking shape
+              in the background. This page is the schematic. Everything here is honest about scale.
+            </p>
+          </div>
+
+          <div className="hero-meta">
+            <div className="stamp"><b>●</b> LAB ACTIVE</div>
+            <div className="stamp">EST · 2025</div>
+            <div className="stamp">REMOTE</div>
+            <div className="stamp">ONE PERSON</div>
+          </div>
+        </section>
+
+        <section className="section" id="work">
+          <div className="section-head">
+            <div className="num">§ 01</div>
+            <div className="tit">Current work</div>
+            <div>Active builds and what's planned next.</div>
+          </div>
+          <div className="body">
+            <div className="projects">
+              {DVAGO.projects.map((p) => (
+                <div key={p.id} className="proj">
+                  <div className="id">{p.code}</div>
+                  <div>
+                    <h3>{p.name}</h3>
+                    <p>{p.desc}</p>
+                  </div>
+                  <div className="specs">
+                    <div className="k">kind</div><div className="v">{p.kind}</div>
+                    <div className="k">stack</div><div className="v">{p.stack}</div>
+                    <div className="k">progress</div><div className="v">{p.progress}</div>
+                    <div className="k">eta</div><div className="v">{p.eta}</div>
+                  </div>
+                  <div className="status" data-s={p.statusKey}>{p.status}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="map">
+          <div className="section-head">
+            <div className="num">§ 02</div>
+            <div className="tit">System map</div>
+            <div>How the pieces relate. Hover to inspect.</div>
+          </div>
+          <div className="body">
+            <SystemMap />
+            <div className="bp-expertise" style={{marginTop: 24, display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap: 16, fontSize: 12}}>
+              {DVAGO.expertise.map((e) => (
+                <div key={e.k} style={{borderTop: "1px solid var(--rule-strong)", paddingTop: 10}}>
+                  <div style={{color:"var(--fg-muted)", letterSpacing:".14em", fontSize: 10, textTransform:"uppercase", marginBottom: 4}}>{e.k}</div>
+                  <div style={{color:"var(--fg-dim)", fontFamily:"var(--sans)"}}>{e.v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="labs">
+          <div className="section-head">
+            <div className="num">§ 03</div>
+            <div className="tit">/labs</div>
+            <div>Ongoing explorations. Notes kept in public.</div>
+          </div>
+          <div className="body">
+            <div style={{display:"grid", gridTemplateColumns: "1fr", gap: 0, border:"1px solid var(--rule-strong)"}}>
+              {DVAGO.experiments.map((x, i) => (
+                <div key={x.code} className="bp-exp-row" style={{
+                  display:"grid",
+                  gridTemplateColumns: "90px 1fr 1.4fr 120px",
+                  gap: 20, alignItems: "baseline",
+                  padding: "16px 24px",
+                  borderTop: i === 0 ? 0 : "1px solid var(--rule)",
+                }}>
+                  <div style={{color:"var(--fg-muted)", fontSize: 11, letterSpacing:".14em"}}>{x.code}</div>
+                  <div style={{fontFamily:"var(--sans)", fontSize: 15}}>{x.name}</div>
+                  <div style={{color:"var(--fg-dim)", fontFamily:"var(--sans)", fontSize: 13}}>{x.desc}</div>
+                  <div className="status" data-s={x.s === "live" ? "active" : ""} style={{
+                    fontSize: 10, letterSpacing:".18em", textTransform:"uppercase",
+                    color: x.s === "live" ? "var(--accent)" : x.s === "paused" ? "#f3c969" : "var(--fg-muted)",
+                  }}>{x.status}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="contact" id="contact">
+          <div className="coord">
+            <div className="coord-cell">
+              <span className="dim">§ 04</span>
+              <span>CONTACT</span>
+            </div>
+          </div>
+          <div>
+            <h2>Open for <em>collaboration</em>, consulting, and curious conversation.</h2>
+            <div className="ch-grid">
+              <a className="ch" href={`mailto:${DVAGO.contact.email}`}>
+                <div className="k">email</div>
+                <div className="v">{DVAGO.contact.email}</div>
+              </a>
+              <a className="ch" href={`https://${DVAGO.contact.github}`}>
+                <div className="k">github</div>
+                <div className="v">{DVAGO.contact.github}</div>
+              </a>
+              <a className="ch" href={`https://${DVAGO.contact.rss}`}>
+                <div className="k">build log (rss)</div>
+                <div className="v">{DVAGO.contact.rss}</div>
+              </a>
+              <div className="ch">
+                <div className="k">signal</div>
+                <div className="v">{DVAGO.contact.signal}</div>
+              </div>
+            </div>
+          </div>
+          <div className="coord" style={{textAlign:"right"}}>
+            <div className="coord-cell" style={{alignItems:"flex-end"}}>
+              <span className="dim">DRAWN BY</span>
+              <span>dvagolab</span>
+            </div>
+            <div className="coord-cell" style={{alignItems:"flex-end"}}>
+              <span className="dim">SCALE</span>
+              <span>1 : 1</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer className="footer">
+        <span>© dvagolab · All revisions</span>
+        <span>SHEET 04/04 · END</span>
+      </footer>
+    </div>
+  );
+}
+
+/* ---------- DirLab.jsx ---------- */
+const { useEffect: useLabEffect, useRef: useLabRef, useState: useLabState } = React;
+
+const ASCII_ART = [
+  "  ┌───────────── dvagolab · ambient field ─────────────┐",
+  "  │                                                    │",
+  "  │   ╭──────╮        ╭──────╮        ╭──────╮         │",
+  "  │   │  be  │────────│ core │────────│ sec  │         │",
+  "  │   ╰──────╯        ╰───┬──╯        ╰──────╯         │",
+  "  │                       │                            │",
+  "  │                   ╭───┴──╮                         │",
+  "  │                   │ cloud│                         │",
+  "  │                   ╰──┬───╯                         │",
+  "  │       ╭──────╮       │       ╭──────╮              │",
+  "  │       │ game │───────┼───────│ /lab │              │",
+  "  │       ╰──────╯       │       ╰──────╯              │",
+  "  │                      ·                             │",
+  "  │     · · · · running · · · · running · · · ·        │",
+  "  │                                                    │",
+  "  └────────────────────────────────────────────────────┘",
+].join("\n");
+
+const GAME_ART = `
+ ┌──────────────────────────────────────────────┐
+ │  .  .       .                    .    .     │
+ │         ·   .     .        .         .      │
+ │   .           ▲                 .       .   │
+ │     .       ╱ ╲      .   .   .              │
+ │   .        ╱···╲          ·               . │
+ │          ╱·····╲    ╭──╮                    │
+ │    .   ╱·······╲    │◇ │   .   .       ·    │
+ │       ──────────────┴──┴──────────────       │
+ │  p-001 · untitled mobile game · in-progress │
+ └──────────────────────────────────────────────┘`.trim();
+
+function AsciiField() {
+  const boxRef = useLabRef(null);
+  const glowRef = useLabRef(null);
+
+  useLabEffect(() => {
+    const onMove = (e) => {
+      if (!boxRef.current || !glowRef.current) return;
+      const r = boxRef.current.getBoundingClientRect();
+      const x = e.clientX - r.left - 100;
+      const y = e.clientY - r.top - 100;
+      glowRef.current.style.transform = `translate(${x}px, ${y}px)`;
+    };
+    const el = boxRef.current;
+    if (el) el.addEventListener("mousemove", onMove);
+    return () => { if (el) el.removeEventListener("mousemove", onMove); };
+  }, []);
+
+  return (
+    <div className="ascii" ref={boxRef}>
+      <div className="glow" ref={glowRef} />
+      <pre>{ASCII_ART}</pre>
+    </div>
+  );
+}
+
+function Wordmark() {
+  const [tick, setTick] = useLabState(0);
+  useLabEffect(() => {
+    const i = setInterval(() => setTick(t => t + 1), 3500);
+    return () => clearInterval(i);
+  }, []);
+  const rotating = ["backend.", "security.", "cloud.", "a game."];
+  return (
+    <div>
+      <h1 className="wordmark">dvago<span className="slash">/</span>lab<span className="cursor" /></h1>
+      <p className="sub">
+        An independent software lab shipping small, considered things.<br/>
+        Currently building: <em>{rotating[tick % rotating.length]}</em>
+      </p>
+      <div className="running">
+        <span className="pulse" />
+        <span>lab is <b style={{color:"var(--fg)"}}>running</b> — last build {new Date().toLocaleDateString()}</span>
+      </div>
+    </div>
+  );
+}
+
+function DirLab() {
+  return (
+    <div className="lab page">
+      <header className="topbar">
+        <div className="brand"><span className="dot" /> dvagolab</div>
+        <nav>
+          <a href="#projects">/projects</a>
+          <a href="#labs">/labs</a>
+          <a href="#contact">/contact</a>
+        </nav>
+        <div className="status">
+          <span className="accent">●</span>
+          <span>online</span>
+        </div>
+      </header>
+
+      <div className="shell">
+        <section className="hero">
+          <Wordmark />
+          <AsciiField />
+        </section>
+
+        <section className="section" id="projects">
+          <div className="section-title">
+            <span className="slash">//</span>
+            <span className="name">projects</span>
+            <span className="line" />
+            <span>{DVAGO.projects.length} items</span>
+          </div>
+          <div className="projects">
+            {DVAGO.projects.map((p, i) => (
+              <article key={p.id} className={"pcard " + (i === 0 ? "featured" : "")}>
+                {i === 0 && <div className="art">{GAME_ART}</div>}
+                <div style={{fontSize:11, color:"var(--fg-muted)", letterSpacing:".12em"}}>
+                  {p.code} · {p.kind}
+                </div>
+                <h3>{p.name} <span className="arrow">→</span></h3>
+                <p>{p.desc}</p>
+                <div className="row">
+                  <span>status · <span style={{color: p.statusKey === "active" ? "var(--accent)" : "var(--fg-dim)"}}>{p.status}</span></span>
+                  <span>progress · {p.progress}</span>
+                  <span>eta · {p.eta}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section" id="labs">
+          <div className="section-title">
+            <span className="slash">//</span>
+            <span className="name">labs</span>
+            <span className="line" />
+            <span>what we're exploring</span>
+          </div>
+          <div className="experiments">
+            {DVAGO.experiments.map((x) => (
+              <div key={x.code} className="xp">
+                <div className="code">{x.code}</div>
+                <div className="name">{x.name}</div>
+                <div className="desc">{x.desc}</div>
+                <div className="status" data-s={x.s}>● {x.status}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="contact" id="contact">
+          <h2>Let's build something <span className="accent">small and good.</span></h2>
+          <p>Open for collaboration, consulting, and quiet correspondence. Response time: honest.</p>
+          <div className="chs">
+            <a className="primary" href={`mailto:${DVAGO.contact.email}`}>{DVAGO.contact.email}</a>
+            <a href={`https://${DVAGO.contact.github}`}>github →</a>
+            <a href={`https://${DVAGO.contact.rss}`}>build log →</a>
+          </div>
+        </section>
+      </div>
+
+      <footer className="footer">
+        <span>© dvagolab</span>
+        <span>made with: attention · coffee · fewer dependencies</span>
+      </footer>
+    </div>
+  );
+}
+
+/* ---------- Tweaks.jsx ---------- */
+const { useState: useTwState, useEffect: useTwEffect } = React;
+
+function Tweaks({ value, onChange }) {
+  const [open, setOpen] = useTwState(true);
+  const [hostOn, setHostOn] = useTwState(true);
+
+  useTwEffect(() => {
+    const handler = (e) => {
+      const t = e?.data?.type;
+      if (t === "__activate_edit_mode") setHostOn(true);
+      if (t === "__deactivate_edit_mode") setHostOn(false);
+    };
+    window.addEventListener("message", handler);
+    try { window.parent.postMessage({ type: "__edit_mode_available" }, "*"); } catch (_) {}
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  if (!hostOn) return null;
+  if (!open) {
+    return (
+      <button
+        className="tweaks"
+        style={{width:"auto", padding:"8px 12px"}}
+        onClick={() => setOpen(true)}
+      >Tweaks ▴</button>
+    );
+  }
+
+  const set = (k, v) => {
+    const next = { ...value, [k]: v };
+    onChange(next);
+    try { window.parent.postMessage({ type: "__edit_mode_set_keys", edits: { [k]: v } }, "*"); } catch (_) {}
+  };
+
+  const Seg = ({ k, opts }) => (
+    <div className="seg">
+      {opts.map(([id, label]) => (
+        <button
+          key={id}
+          data-on={value[k] === id}
+          onClick={() => set(k, id)}
+        >{label}</button>
+      ))}
+    </div>
+  );
+
+  const accents = [
+    ["lime",   "#c8f264"],
+    ["amber",  "#f3c969"],
+    ["cyan",   "#7dd8d1"],
+    ["coral",  "#f2866b"],
+    ["violet", "#b5a3f5"],
+  ];
+
+  return (
+    <div className="tweaks">
+      <h4>
+        <span>Tweaks</span>
+        <button className="close" onClick={() => setOpen(false)}>hide ▾</button>
+      </h4>
+
+      <div className="row">
+        <label>Direction</label>
+        <Seg k="direction" opts={[
+          ["devlog", "devlog"],
+          ["blueprint", "blueprint"],
+          ["lab", "/lab"],
+        ]} />
+      </div>
+
+      <div className="row">
+        <label>Accent</label>
+        <div className="swatches">
+          {accents.map(([id, col]) => (
+            <button
+              key={id}
+              title={id}
+              data-on={value.accent === id}
+              style={{ background: col }}
+              onClick={() => set("accent", id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="row">
+        <label>Density</label>
+        <Seg k="density" opts={[
+          ["compact", "compact"],
+          ["comfortable", "comfort"],
+          ["spacious", "spacious"],
+        ]} />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- App.jsx ---------- */
+const { useState: useAppState, useEffect: useAppEffect } = React;
+
+function App() {
+  const [tweaks, setTweaks] = useAppState(window.TWEAKS || { direction: "devlog", accent: "lime", density: "comfortable" });
+
+  useAppEffect(() => {
+    const el = document.documentElement;
+    el.setAttribute("data-accent", tweaks.accent);
+    el.setAttribute("data-density", tweaks.density);
+  }, [tweaks.accent, tweaks.density]);
+
+  let body;
+  if (tweaks.direction === "blueprint") body = <DirBlueprint />;
+  else if (tweaks.direction === "lab")  body = <DirLab />;
+  else                                   body = <DirDevlog />;
+
+  return (
+    <React.Fragment>
+      {body}
+      <Tweaks value={tweaks} onChange={setTweaks} />
+    </React.Fragment>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
